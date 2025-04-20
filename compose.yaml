@@ -14,6 +14,13 @@ services:
     image: grafana/grafana-enterprise
     ports:
       - 3000:3000
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yml
   app:
     container_name: app
     image: golang:1.24.2-alpine3.21

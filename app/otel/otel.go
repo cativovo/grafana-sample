@@ -1,4 +1,4 @@
-package main
+package otel
 
 import (
 	"context"
@@ -10,9 +10,12 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	"go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 )
 
-var tracer trace.Tracer
+// make sure to call InitTracerProvider to use the correct tracer provider
+// default to noop for tests
+var Tracer trace.Tracer = noop.NewTracerProvider().Tracer("noop tracer")
 
 // OTLP Exporter
 func newOTLPExporter(ctx context.Context) (sdktrace.SpanExporter, error) {
@@ -45,7 +48,7 @@ func newTraceProvider(ctx context.Context, exp sdktrace.SpanExporter) *sdktrace.
 	)
 }
 
-func initTracerProvider() (shutdown func()) {
+func InitTracerProvider() (shutdown func()) {
 	ctx := context.Background()
 	exp, err := newOTLPExporter(ctx)
 	if err != nil {
@@ -56,7 +59,7 @@ func initTracerProvider() (shutdown func()) {
 
 	otel.SetTracerProvider(tp)
 
-	tracer = tp.Tracer("app")
+	Tracer = tp.Tracer("app")
 
 	return func() {
 		if err := tp.Shutdown(ctx); err != nil {
