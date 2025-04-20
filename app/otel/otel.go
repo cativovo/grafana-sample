@@ -67,3 +67,24 @@ func InitTracerProvider() (shutdown func()) {
 		}
 	}
 }
+
+func NewTracer() (tracer trace.Tracer, shutdown func()) {
+	ctx := context.Background()
+	exp, err := newOTLPExporter(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	tp := newTraceProvider(ctx, exp)
+
+	otel.SetTracerProvider(tp)
+
+	tracer = tp.Tracer("app")
+	shutdown = func() {
+		if err := tp.Shutdown(ctx); err != nil {
+			panic(err)
+		}
+	}
+
+	return tracer, shutdown
+}

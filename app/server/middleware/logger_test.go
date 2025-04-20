@@ -11,7 +11,10 @@ import (
 	"testing"
 
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
+	"go.opentelemetry.io/otel/trace/noop"
 )
+
+var tracer = noop.NewTracerProvider().Tracer("noop tracer")
 
 func TestLoggerMiddleware(t *testing.T) {
 	t.Run("middleware.WrapResponseWriter", func(t *testing.T) {
@@ -28,7 +31,7 @@ func TestLoggerMiddleware(t *testing.T) {
 		r := httptest.NewRequest("GET", "/", nil)
 		w := chimiddleware.NewWrapResponseWriter(httptest.NewRecorder(), 1)
 
-		handler := middleware.Logger(logger)(testHandler)
+		handler := middleware.Logger(logger, tracer)(testHandler)
 		handler.ServeHTTP(w, r)
 	})
 
@@ -45,7 +48,7 @@ func TestLoggerMiddleware(t *testing.T) {
 		r := httptest.NewRequest("GET", "/", nil)
 		w := chimiddleware.NewWrapResponseWriter(httptest.NewRecorder(), 1)
 
-		handler := middleware.Logger(logger)(testHandler)
+		handler := middleware.Logger(logger, tracer)(testHandler)
 		handler.ServeHTTP(w, r)
 
 		testCases := []struct {
