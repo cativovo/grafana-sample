@@ -1,6 +1,7 @@
 package main
 
 import (
+	m "app/metrics"
 	"app/otel"
 	"app/repository"
 	"app/server"
@@ -12,6 +13,7 @@ import (
 )
 
 func main() {
+	metrics := m.New()
 	tracer, shutdown := otel.NewTracer()
 	defer shutdown()
 
@@ -23,6 +25,7 @@ func main() {
 	s := server.NewServer(
 		fmt.Sprintf(":%d", port),
 		logger,
+		metrics,
 		tracer,
 		service,
 	)

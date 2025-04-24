@@ -16,7 +16,11 @@ func Trace(t trace.Tracer) func(h http.Handler) http.Handler {
 			ctx, span := t.Start(r.Context(), fmt.Sprintf("%s %s", r.Method, r.URL.Path))
 			defer span.End()
 
-			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
+			ww, ok := w.(middleware.WrapResponseWriter)
+			if !ok {
+				ww = middleware.NewWrapResponseWriter(w, r.ProtoMajor)
+			}
+
 			defer func() {
 				span.SetAttributes(
 					attribute.String(string(semconv.HTTPRequestMethodKey), r.Method),
